@@ -1,0 +1,35 @@
+version: '3.3'
+
+services:
+    app:
+        image: phatnguyen1812/rails-app:latest
+        command: "./bin/rails server"
+        container_name: rails-app
+        environment:
+            - RAILS_ENV=${RAILS_ENV}
+            - POSTGRES_HOST=${POSTGRES_HOST}
+            - POSTGRES_DATABASE=${POSTGRES_DATABASE}
+            - POSTGRES_USERNAME=${POSTGRES_USERNAME}
+            - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+        ports:
+            - "3000:3000"
+
+    sidekiq:
+        image: phatnguyen1812/rails-app:latest
+        command: 'bundle exec sidekiq'
+        container_name: sidekiq
+        environment:
+            - REDIS_SERVER=${REDIS_SERVER}
+        ports:
+            - "3001:3001"
+
+    nginx:
+        image: nginx
+        container_name: nginx
+        ports:
+            - "80:80"
+        volumes:
+            - ./nginx.conf:/etc/nginx/nginx.conf
+            - /var/cache/assets:/var/cache/assets
+        depends_on:
+            - app

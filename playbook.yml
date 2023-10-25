@@ -1,0 +1,69 @@
+- name: my-playbook
+  hosts: server
+  become: true
+  become_user: root
+  become_method: sudo
+  tasks:
+    - name: Create /home/ubuntu/ansible directory
+      file:
+        path: /home/ubuntu/ansible
+        state: directory
+        mode: '0755'
+
+    - name: Create /etc/phat directory
+      file:
+        path: /var/cache/assets
+        state: directory
+        mode: '0755'
+
+    - name: Copy docker-compose.yml file to remote machine
+      copy:
+        src: docker-compose.yml
+        dest: /home/ubuntu/ansible/docker-compose.yml
+        mode: '0755'
+
+    - name: Copy nginx.conf file to remote machine
+      copy:
+        src: nginx.conf
+        dest: /home/ubuntu/ansible/nginx.conf
+        mode: '0755'
+
+    - name: Get docker-compose down
+      command:
+        cmd: docker-compose -f /home/ubuntu/ansible/docker-compose.yml down
+      changed_when: true
+
+    - name: Deploy Docker Compose stack
+      community.docker.docker_compose:
+        project_src: /home/ubuntu/ansible
+        files:
+          - docker-compose.yml
+        state: present
+        pull: true
+      environment:
+        RAILS_ENV: "{{ lookup('env','RAILS_ENV') }}"
+        POSTGRES_HOST: "{{ lookup('env','POSTGRES_HOST') }}"
+        POSTGRES_PASSWORD: "{{ lookup('env','POSTGRES_PASSWORD') }}"
+        POSTGRES_DATABASE: "{{ lookup('env','POSTGRES_DATABASE') }}"
+        POSTGRES_USERNAME: "{{ lookup('env','POSTGRES_USERNAME') }}"
+        REDIS_SERVER: "{{ lookup('env','REDIS_SERVER') }}"
+
+
+    # - name: Docker compose up with remote environment variable
+    #   ansible.builtin.shell: |
+    #     source ~/.bashrc
+    #     docker-compose -f /home/ubuntu/ansible/docker-compose.yml up -d
+    #   args:
+    #     executable: /bin/bash
+    #   changed_when: true
+
+
+    - name: Copy assets from Docker container to host machine
+      command:
+        cmd: docker cp rails-app:/rails/public/assets /var/cache
+      changed_when: true
+
+    - name: Prune everything
+      community.docker.docker_prune:
+        containers: true
+        images: true
