@@ -11,6 +11,32 @@ pipeline {
 
 
     stages {
+        stage('Checking'){
+            steps{
+                sh "echo Testing"
+            }
+            post {
+                success {
+                    script {
+                        withCredentials([string(credentialsId: 'goldenowl_github_token', variable: 'GITHUB_TOKEN')]) {
+                            // Use GitHub API to update build status
+                            // This is just a placeholder. Replace with your actual API call.
+                            sh 'curl -XPOST -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/:owner/:repo/statuses/$(git rev-parse HEAD) -d "{\\"state\\": \\"success\\", \\"target_url\\": \\"${BUILD_URL}\\", \\"description\\": \\"The build has succeeded!\\"}"'
+                        }
+                    }
+                }
+                failure {
+                    script {
+                        withCredentials([string(credentialsId: 'goldenowl_github_token', variable: 'GITHUB_TOKEN')]) {
+                            // Use GitHub API to update build status
+                            // This is just a placeholder. Replace with your actual API call.
+                            sh 'curl -XPOST -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/:owner/:repo/statuses/$(git rev-parse HEAD) -d "{\\"state\\": \\"failure\\", \\"target_url\\": \\"${BUILD_URL}\\", \\"description\\": \\"The build has failed.\\"}"'
+                        }
+                    }
+                }
+            }
+        }
+
         stage('Building image') {
             when {
                 anyOf {
