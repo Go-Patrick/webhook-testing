@@ -11,9 +11,17 @@ pipeline {
 
 
     stages {
-        stage('Checking'){
-            steps{
-                sh "echo Testing"
+        stage('Building image') {
+            agent{
+                docker{
+                    image "ruby:3-1-3"
+                }
+            }
+            steps {
+                sh 'bundle install'
+                sh 'bundle exec rake db:create RAILS_ENV=test'
+                sh 'bundle exec rake db:migrate RAILS_ENV=test'
+                sh 'bundle exec rake test'
             }
             post {
                 success {
@@ -35,14 +43,15 @@ pipeline {
                     }
                 }
             }
+        }
 
         stage('Building image') {
-            // when {
-            //     anyOf {
-            //         branch 'dev'
-            //         branch 'master'
-            //     }
-            // }
+            when {
+                anyOf {
+                    branch 'dev'
+                    branch 'master'
+                }
+            }
             steps{
                 script {
                     dockerImage = docker.build registry + ":$BUILD_NUMBER"
@@ -68,7 +77,6 @@ pipeline {
                     }
                 }
             }
-        }
         }
 
         stage('Deploy image') {
