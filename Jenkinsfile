@@ -11,7 +11,7 @@ pipeline {
 
 
     stages {
-        stage('Building image') {
+        stage('Automation testing') {
             agent{
                 docker{
                     image "ruby:3-1-3"
