@@ -38,12 +38,12 @@ pipeline {
         }
 
         stage('Building image') {
-            when {
-                anyOf {
-                    branch 'dev'
-                    branch 'master'
-                }
-            }
+            // when {
+            //     anyOf {
+            //         branch 'dev'
+            //         branch 'master'
+            //     }
+            // }
             steps{
                 script {
                     dockerImage = docker.build registry + ":$BUILD_NUMBER"
