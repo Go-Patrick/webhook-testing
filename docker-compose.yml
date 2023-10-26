@@ -2,7 +2,7 @@ version: '3.3'
 
 services:
     app:
-        image: phatnguyen1812/rails-app:latest
+        build: .
         command: "./bin/rails server"
         container_name: rails-app
         environment:
@@ -14,22 +14,22 @@ services:
         ports:
             - "3000:3000"
 
-    sidekiq:
-        image: phatnguyen1812/rails-app:latest
-        command: 'bundle exec sidekiq'
-        container_name: sidekiq
-        environment:
-            - REDIS_SERVER=${REDIS_SERVER}
-        ports:
-            - "3001:3001"
+    # sidekiq:
+    #     image: phatnguyen1812/rails-app:latest
+    #     command: 'bundle exec sidekiq'
+    #     container_name: sidekiq
+    #     environment:
+    #         - REDIS_SERVER=${REDIS_SERVER}
+    #     ports:
+    #         - "3001:3001"
 
-    nginx:
-        image: nginx
-        container_name: nginx
-        ports:
-            - "80:80"
-        volumes:
-            - ./nginx.conf:/etc/nginx/nginx.conf
-            - /var/cache/assets:/var/cache/assets
-        depends_on:
-            - app
+    # nginx:
+    #     image: nginx
+    #     container_name: nginx
+    #     ports:
+    #         - "80:80"
+    #     volumes:
+    #         - ./nginx.conf:/etc/nginx/nginx.conf
+    #         - /var/cache/assets:/var/cache/assets
+    #     depends_on:
+    #         - app

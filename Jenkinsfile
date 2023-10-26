@@ -23,6 +23,27 @@ pipeline {
                     dockerImage = docker.build registry + ":$BUILD_NUMBER"
                 }
             }
+            post {
+                success {
+                    script {
+                        withCredentials([string(credentialsId: 'goldenowl_github_token', variable: 'GITHUB_TOKEN')]) {
+                            // Use GitHub API to update build status
+                            // This is just a placeholder. Replace with your actual API call.
+                            sh 'curl -XPOST -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/:owner/:repo/statuses/$(git rev-parse HEAD) -d "{\\"state\\": \\"success\\", \\"target_url\\": \\"${BUILD_URL}\\", \\"description\\": \\"The build has succeeded!\\"}"'
+                        }
+                    }
+                }
+                failure {
+                    script {
+                        withCredentials([string(credentialsId: 'goldenowl_github_token', variable: 'GITHUB_TOKEN')]) {
+                            // Use GitHub API to update build status
+                            // This is just a placeholder. Replace with your actual API call.
+                            sh 'curl -XPOST -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/:owner/:repo/statuses/$(git rev-parse HEAD) -d "{\\"state\\": \\"failure\\", \\"target_url\\": \\"${BUILD_URL}\\", \\"description\\": \\"The build has failed.\\"}"'
+                        }
+                    }
+                }
+            }
+        }
         }
 
         stage('Deploy image') {
@@ -36,6 +57,26 @@ pipeline {
                 script{
                     docker.withRegistry("https://" + registry, "ecr:ap-southeast-1:" + registryCredential) {
                         dockerImage.push()
+                    }
+                }
+            }
+            post {
+                success {
+                    script {
+                        withCredentials([string(credentialsId: 'goldenowl_github_token', variable: 'GITHUB_TOKEN')]) {
+                            // Use GitHub API to update build status
+                            // This is just a placeholder. Replace with your actual API call.
+                            sh 'curl -XPOST -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/:owner/:repo/statuses/$(git rev-parse HEAD) -d "{\\"state\\": \\"success\\", \\"target_url\\": \\"${BUILD_URL}\\", \\"description\\": \\"The build has succeeded!\\"}"'
+                        }
+                    }
+                }
+                failure {
+                    script {
+                        withCredentials([string(credentialsId: 'goldenowl_github_token', variable: 'GITHUB_TOKEN')]) {
+                            // Use GitHub API to update build status
+                            // This is just a placeholder. Replace with your actual API call.
+                            sh 'curl -XPOST -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/:owner/:repo/statuses/$(git rev-parse HEAD) -d "{\\"state\\": \\"failure\\", \\"target_url\\": \\"${BUILD_URL}\\", \\"description\\": \\"The build has failed.\\"}"'
+                        }
                     }
                 }
             }
